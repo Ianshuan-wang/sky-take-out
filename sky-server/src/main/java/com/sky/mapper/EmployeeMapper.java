@@ -41,7 +41,7 @@ public interface EmployeeMapper {
      * 更新员工状态
      * @param employee
      */
-    void updateStatus(Employee employee);
+    void update(Employee employee);
 
     /**
      * 根据id查询员工

@@ -131,7 +131,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .id(id)
                 .status(status)
                 .build();
-        employeeMapper.updateStatus(employee);
+        employeeMapper.update(employee);
     }
 
     /**
@@ -144,6 +144,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeMapper.getById(id);
         employee.setPassword("***");
         return employee;
+    }
+
+    /**
+     * 更新员工
+     * @param employeeDTO
+     */
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        //传给持久层的需要时实体类 将dto转换为实体类
+        Employee employee = new Employee();
+
+        //拷贝对象属性
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        //设置员工的创建时间与修改时间
+        employee.setUpdateTime(LocalDateTime.now());
+
+        //设置当前员工记录的 创建人id与修改人id
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employeeMapper.update(employee);
     }
 
 }
