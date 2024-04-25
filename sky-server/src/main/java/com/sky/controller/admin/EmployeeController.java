@@ -120,4 +120,16 @@ public class EmployeeController {
         return Result.success();
     }
 
+    /**
+     * 通过id查询员工
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation(value = "通过id查询员工")
+    public Result<Employee> getById(@PathVariable Long id){
+        Employee employee = employeeService.getById(id);
+        return Result.success(employee);
+    }
+
 }
