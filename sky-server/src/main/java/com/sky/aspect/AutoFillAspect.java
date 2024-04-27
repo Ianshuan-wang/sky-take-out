@@ -34,4 +34,64 @@ public class AutoFillAspect {
     public void autoFillPointCut(){
 
     }
+
+    /**
+     * 前置通知
+     * 指的是执行拦截到的方法 前
+     */
+    @Before("autoFillPointCut()")
+    public void autoFill(JoinPoint joinPoint){
+        log.info("joinPoint: {}",joinPoint.getSignature());
+        log.info("joinPoint: {}",joinPoint.getArgs().getClass().getTypeName());
+
+        /**
+         * 获取数据库操作类型 */
+        MethodSignature signature = (MethodSignature)joinPoint.getSignature();      //获得方法签名对象
+        AutoFill autoFill = signature.getMethod().getAnnotation(AutoFill.class);    //获得方法上的注解
+        OperationType operationType = autoFill.value();                             //获得注解中的操作类型
+
+        /**
+         * 获取实体 准备赋值数据 */
+        Object[] args = joinPoint.getArgs();                                        //获取当前目标方法的参数
+        //防止空指针
+        if(args == null || args.length == 0) return;
+        Object entity = args[0];
+        LocalDateTime time = LocalDateTime.now();
+        Long empId = BaseContext.getCurrentId();
+        /**
+         * 根据不同的操作类型 为属性赋值 */
+        if (operationType == OperationType.INSERT) {
+            //当前执行的是insert操作，为4个字段赋值
+            try {
+                //获得set方法对象----Method
+                Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                //通过反射调用目标对象的方法
+                setCreateTime.invoke(entity, time);
+                setUpdateTime.invoke(entity, time);
+                setCreateUser.invoke(entity, empId);
+                setUpdateUser.invoke(entity, empId);
+            } catch (Exception ex) {
+                log.error("公共字段自动填充失败：{}", ex.getMessage());
+            }
+        }
+        else {
+            //当前执行的是update操作，为2个字段赋值
+            try {
+                //获得set方法对象----Method
+                Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                //通过反射调用目标对象的方法
+                setUpdateTime.invoke(entity, time);
+                setUpdateUser.invoke(entity, empId);
+            } catch (Exception ex) {
+                log.error("公共字段自动填充失败：{}", ex.getMessage());
+            }
+
+        }
+
+
+    }
 }
